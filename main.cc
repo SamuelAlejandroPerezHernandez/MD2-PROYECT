@@ -4,6 +4,7 @@
 #include <cstdlib>  
 #include <ctime>
 #include <algorithm>
+#include <map> // para evaluar mano, modo dosjgadores
 
 struct carta{
     std::string carta;
@@ -22,7 +23,6 @@ std::string cyan = "\033[1;36m";
 std::string reset = "\033[0m";
 
 
-
 void menu( std::vector<carta> barajaCarta);
 void reglas();
 void creditos();
@@ -30,7 +30,11 @@ void baraja(std::vector<carta>& vect);
 void mostrarBaraja(std::vector<carta>& vect);
 void barajearCartas(std::vector<carta>& vect);
 void unSoloJugador(std::vector<carta>& vect);
-void dosJugadores();
+
+void dosJugadores(std::vector<carta>& vect);
+void mostrarMano(const std::vector<carta>& mano, const std::string& jugador);
+int evaluarMano(const std::vector<carta>& mano);
+
 void mostrarProbabilidadIndividual(std::vector<carta>& vect, std::vector<carta> manoJugador, std::vector<carta> manoMaquina);
 void mostrarProbabilidadMazo(std::vector<carta>& vect, std::vector<carta> manoJugador, std::vector<carta> manoMaquina);
 void estadisticas();
@@ -53,12 +57,13 @@ void menu( std::vector<carta> barajaCartas){
     int opcion;
 
     do{
-        std::cout << "  VIENVENIDO " << std::endl << std::endl;
+        std::cout << "  VIENVENIDO " << std::endl << std::endl;             //Error de ortografia :/
         std::cout << " LISTO PARA JUGAR? " << std::endl << std::endl; 
         std::cout << " 1 -> reglas del juego" << std::endl;
         std::cout << " 2 -> mostrar baraja" << std::endl;
         std::cout << " 3 -> jugar solo" <<  std::endl;
-        std::cout << " 4 -> salir" << std::endl;
+        std::cout << " 4 -> Jugar dos jugadores\n";
+        std::cout << " 5 -> salir" << std::endl;
 
         std::cin >> opcion;
         
@@ -73,14 +78,17 @@ void menu( std::vector<carta> barajaCartas){
             case 3:
                 unSoloJugador(barajaCartas);
                 break;
-            case 4:
+             case 4:
+                dosJugadores(barajaCartas);
+                break;
+            case 5:
                 std::cout << "Saliendo del juego..." << std::endl;
                 break;
             default:
                 std::cout << "Opción no válida, intenta de nuevo." << std::endl;
                 break;
         }
-    } while(opcion != 4); // Salir del menú con la opción 3 //modificar una vez se hayan hecho todas las funciones;
+    } while(opcion != 5); // Salir del menú con la opción 3 //modificar una vez se hayan hecho todas las funciones;
 
 }
 
@@ -237,15 +245,132 @@ void unSoloJugador(std::vector<carta>& vect){
 
     }while(opcion_unJugador != 4);
     
+}
 
+void dosJugadores(std::vector<carta>& vect) {
+    barajearCartas(vect);
 
+    std::vector<carta> manoJugador1;
+    std::vector<carta> manoJugador2;
 
+    // Repartir manos
+    for (int i = 0; i < 5; i++) {
+        manoJugador1.push_back(vect[i]);
+        manoJugador2.push_back(vect[i + 5]);
+    }
+    vect.erase(vect.begin(), vect.begin() + 10); // esto quita las cartas
 
+    int opcionJugador1, opcionJugador2;
+    bool turnoJugador1 = true;
+
+    do {
+        std::cout << (turnoJugador1 ? "Turno de Jugador 1" : "Turno de Jugador 2") << std::endl;
+
+        if (turnoJugador1) {
+            std::cout << "Opciones para Jugador 1:\n";
+            std::cout << "1 - Ver mano\n";
+            std::cout << "2 - Retirarse\n";
+            std::cout << "3 - Pasar turno\n";
+            std::cin >> opcionJugador1;
+
+            switch (opcionJugador1) {
+                case 1:
+                    mostrarMano(manoJugador1, "Jugador 1");
+                    break;
+                case 2:
+                    std::cout << "Jugador 1 se retira. Jugador 2 gana.\n";
+                    return;
+                case 3:
+                    turnoJugador1 = false; // Cambiar al J2
+                    break;
+                default:
+                    std::cout << "Opción no válida. Intenta de nuevo.\n";
+                    break;
+            }
+        } else {
+            std::cout << "Opciones para Jugador 2:\n";
+            std::cout << "1 - Ver mano\n";
+            std::cout << "2 - Retirarse\n";
+            std::cout << "3 - Pasar turno\n";
+            std::cin >> opcionJugador2;
+
+            switch (opcionJugador2) {
+                case 1:
+                    mostrarMano(manoJugador2, "Jugador 2");
+                    break;
+                case 2:
+                    std::cout << "Jugador 2 se retira. Jugador 1 gana.\n";
+                    return;
+                case 3:
+                    turnoJugador1 = true; // Cambiar al J1
+                    break;
+                default:
+                    std::cout << "Opción no válida. Intenta de nuevo.\n";
+                    break;
+            }
+        }
+    } while (opcionJugador1 != 3 || opcionJugador2 != 3); // Ambos deben pasar turno para terminar
+
+    // Evaluar las manos de los jugadores
+    int resultadoJugador1 = evaluarMano(manoJugador1);                                                 
+    int resultadoJugador2 = evaluarMano(manoJugador2);
+
+    std::cout << "Resultado de Jugador 1: " << resultadoJugador1 << "\n";
+    std::cout << "Resultado de Jugador 2: " << resultadoJugador2 << "\n";
+
+    // Determinar al ganador
+    if (resultadoJugador1 > resultadoJugador2) {
+        std::cout << "Jugador 1 gana con una mejor mano!\n";
+    } else if (resultadoJugador2 > resultadoJugador1) {
+        std::cout << "Jugador 2 gana con una mejor mano!\n";
+    } else {
+        std::cout << "Empate, ambos jugadores tienen la misma mano!\n";
+    }
+}
+
+void mostrarMano(const std::vector<carta>& mano, const std::string& jugador) {   // Mostrar mano, para jugado 1 y jugador 2
+    std::cout << "Mano de " << jugador << ":\n";
+    for (const auto& c : mano) {
+        if (c.palo == "corazones") {
+            std::cout << rojo << c.carta << " de " << c.palo << reset << "\n";
+        } else if (c.palo == "diamantes") {
+            std::cout << azul << c.carta << " de " << c.palo << reset << "\n";
+        } else if (c.palo == "treboles") {
+            std::cout << verde << c.carta << " de " << c.palo << reset << "\n";
+        } else if (c.palo == "espadas") {
+            std::cout << cyan << c.carta << " de " << c.palo << reset << "\n";
+        }
+    }
 }
 
 
+int evaluarMano(const std::vector<carta>& mano) {
+    // Mapa para contar la frecuencia de cada valor de carta en la mano
+    std::map<std::string, int> conteoValores;
+    for (const auto& c : mano) {
+        conteoValores[c.carta]++;
+    }
 
+    bool tienePar = false;
+    bool tieneTrio = false;
 
+    for (const auto& par : conteoValores) {
+        if (par.second == 2) {
+            tienePar = true;
+        }
+        if (par.second == 3) {
+            tieneTrio = true;
+        }
+    }
 
+    // Determinar el puntaje de la mano
+    if (tieneTrio && tienePar) {
+        return 6;
+    } else if (tieneTrio) {
+        return 3; 
+    } else if (tienePar) {
+        return 2; 
+    }
 
-
+    return 1; 
+}
