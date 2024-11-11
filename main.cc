@@ -24,49 +24,46 @@ std::string magenta = "\033[1;35m";
 std::string cyan = "\033[1;36m";
 std::string reset = "\033[0m";
 
+void crearBaraja(std::vector<carta> &baraja);
+void escaleraReal(std::vector<carta> &escaleraReal);
+void escaleraColor(std::vector<carta> escaleraColor);
+void mostrarBaraja(std::vector<carta> &baraja);
+void barajearCartas(std::vector<carta> &baraja);
+int evaluarMano(const std::vector<carta> &barajaOroginal);
+void probabilidadIndividual(std::vector<carta> &baraja, std::vector<carta> &manoJugador, const std::vector<carta> &barajaOriginal);
+void probabilidadMazo(std::vector<carta> &manoJugador, std::vector<carta> &escaleraReal);
+void JugarSolo(std::vector<carta> &baraja, std::vector<carta> &barajaOriginal, std::vector<carta> &escaleraReal);
+void menu(std::vector<carta> &baraja, std::vector<carta> &manoJugador, std::vector<carta> &barajaCopia, std::vector<carta> &barajaOriginal, std::vector<carta> &escaleraReal);
 
-void menu(std::vector<carta> barajaCarta, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker);
 void reglas();
 void creditos();
-void baraja(std::vector<carta>& vect);
-void mostrarBaraja(std::vector<carta>& vect);
-void barajearCartas(std::vector<carta>& vect);
 
 void dosJugadores(std::vector<carta>& vect);
 void mostrarMano(const std::vector<carta>& mano, const std::string& jugador);
-int evaluarMano(const std::vector<carta>& mano);
+int evaluarManos(const std::vector<carta>& mano);
 void calcularProbabilidadFutura(const std::vector<carta>& mano, const std::vector<carta>& mazo);
 
-
-void unSoloJugador(std::vector<carta>& vect, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker);
-void mostrarProbabilidadIndividual(std::vector<carta>& vect, std::vector<carta>& manoJugador, std::vector<carta>& manoMaquina);
-void mostrarProbabilidadMazo(std::vector<carta>& vect, std::vector<carta> manoJugador, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker);
-void estadisticas();
-void simulacion();
-void apuestas();
-void escaleraReal();
-void escaleraColor();
-void poker();
-int evaluarMano2(); //// ????
-void determinarGanador();
-
-
-
 int main(){
-    std::vector<carta> barajaCartas;
-    std::vector<carta> auxER;
-    std::vector<carta> auxEC;
-    std::vector<carta> auxP;
+    std::vector<carta> baraja;
+    std::vector<carta> manoJugador;
+    std::vector<carta> barajaOriginal = baraja;
+    std::vector<carta> barajaCopia;
+    std::vector<carta> escaleraReal;
+    std::vector<carta> escaleraColor;
 
-    baraja(barajaCartas);
-    menu(barajaCartas, auxER, auxEC, auxP);
+    crearBaraja(baraja);
+
+    barajaOriginal = baraja;
+    barajaCopia = baraja;   
+
+    menu(baraja, manoJugador, barajaCopia, barajaOriginal, escaleraReal);
 
 
     return 0;
 
 }
 
-void menu(std::vector<carta> barajaCartas, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker) {
+void menu(std::vector<carta> &baraja, std::vector<carta> &manoJugador, std::vector<carta> &barajaCopia, std::vector<carta> &barajaOriginal, std::vector<carta>& escaleraReal){
     int opcion;
 
     do {
@@ -82,16 +79,17 @@ void menu(std::vector<carta> barajaCartas, std::vector<carta> escaleraReal, std:
 
         switch (opcion) {
             case 1:
-                reglas();
+                
                 break;
             case 2:
-                mostrarBaraja(barajaCartas);
+                mostrarBaraja(baraja);
                 break;
             case 3:
-                unSoloJugador(barajaCartas, escaleraReal, escaleraColor, poker);
+                JugarSolo(baraja, barajaOriginal, escaleraReal);
+
                 break;
             case 4:
-                dosJugadores(barajaCartas);
+                
                 break;
             case 5:
                 std::cout << "Saliendo del juego..." << std::endl;
@@ -104,67 +102,86 @@ void menu(std::vector<carta> barajaCartas, std::vector<carta> escaleraReal, std:
 }
 
 
-void reglas(){
-    std::cout << " Las reglas del juego de poker son: " << std::endl << std::endl;
-}
+void crearBaraja(std::vector<carta> &baraja){
+    std::string cartas[] = {"A", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};  /// EL 1 NO.. XD
+    std::string palo[] = {"corazones", "diamantes", "espadas", "treboles"};
 
-void baraja(std::vector<carta>& vect){
-    std::string cartas[] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"}; // declarar as 13 opciones de cartas; 
-    std::string tipos[] = {"corazones", "diamantes", "treboles", "espadas"}; //declarar los 4 tipos de cartas;
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j <= 13; j++){    /// <13  , NO <=13   
+            baraja.push_back({cartas[j], palo[i]});
 
-    for(int i = 0; i < 4; i++){ // esto es para recorrer ambos arreglos;
-        for(int j = 0; j < 13; j++){
-            vect.push_back({cartas[j], tipos[i]}); //esto se usa para que se agrege cada elemento;
-            
         }
     }
 }
 
-void mostrarBaraja(std::vector<carta>& vect){
-    std::cout << " ESTA ES LA BARAJA INGLESA CON LA QUE SE JUGARA: " << std::endl << std::endl;
-    for(int i = 0; i < vect.size(); i++){         
-        if(vect[i].palo == "corazones"){
-            std::cout << rojo << vect[i].carta << " de " << vect[i].palo << reset << std::endl << std::endl;
-        }
-        else if(vect[i].palo == "diamantes"){
-            std::cout << azul << vect[i].carta << " de " << vect[i].palo << reset << std::endl << std::endl;
-        }
-        else if(vect[i].palo == "treboles"){
-            std::cout << verde << vect[i].carta << " de " << vect[i].palo << reset << std::endl << std::endl;
-        }
-        else if(vect[i].palo == "espadas"){
-            std::cout << cyan << vect[i].carta << " de " << vect[i].palo << reset << std::endl << std::endl;
+void escaleraReal(std::vector<carta> &escaleraReal){
+    std::string cartasER[] = {"A", "K", "Q", "J", "10"};
+    std::string paloER[] = {"corazones", "diamantes", "espadas", "trboles"}; /// e
+
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 5; j++){
+            escaleraReal.push_back({cartasER[j], paloER[i]});
         }
     }
 }
 
 /* void barajearCartas(std::vector<carta>& vect){
-    srand(static_cast<unsigned int>(time(0))); 
-    std::random_shuffle(vect.begin(), vect.end());
+void mostrarBaraja(std::vector<carta> &baraja){
+    std::cout << " ESTA ES LA BARAJA INGLESA: " << std::endl << std::endl;
+    for(int i = 0; i <= baraja.size(); i++){
+        std::cout << baraja[i].carta << " de " << baraja[i].palo << std::endl << std::endl;
+    }
+}
 
-} */    /// esa es tu uncion original, la cambie x la de abajo pq random_shuffle esta obsoleto
+void barajearCartas(std::vector<carta> &baraja){
+    srand(static_cast<unsigned int>(time(0))); 
+    std::random_shuffle(baraja.begin(), baraja.end());
+
+}     /// esa es tu uncion original, la cambie x la de abajo pq random_shuffle esta obsoleto
 
 void barajearCartas(std::vector<carta>& vect){
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(vect.begin(), vect.end(), g);
+
+
+} */  ///CAMBIOS QUE ENTRARON EN CONFLICTO PERO LOS ARREGLE, QUEDAN COMENTADOS POR SI LOS OCUPAS DE NUEVO
+
+void mostrarBaraja(std::vector<carta> &baraja){
+    std::cout << " ESTA ES LA BARAJA INGLESA: " << std::endl << std::endl;
+    for(size_t i = 0; i < baraja.size(); i++){
+        std::cout << baraja[i].carta << " de " << baraja[i].palo << std::endl << std::endl;
+    }
 }
 
-void mostrarProbabilidadIndividual(std::vector<carta>& vect, std::vector<carta>& manoJugador, std::vector<carta>& manoMaquina){
-   long double totalCartas = vect.size();
-   long double totalCartasManoJugador = manoJugador.size();
-   std::string cartaBuscada;
-   std::string paloBuscado;
-   long double casosFavorables = 0.0;
-   long double probabilidadIndividual = 0.0;
-   long double denominador = 0.0;
+void barajearCartas(std::vector<carta>& baraja){
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(baraja.begin(), baraja.end(), g);
+}
 
-   std::cout << "Que carta deseas buscar? " << std::endl;
-   std::cin >> cartaBuscada;
-   std::cout << "Que palo deseas buscar? " << std::endl;
-   std::cin >> paloBuscado;
-   
-   bool manoObtenida = false;
+
+int evaluarMano(const std::vector<carta> &barajaOroginal){
+    std::cout << " ESTO ES LO QUE VALE CADA CARTA: " << std::endl << std::endl;
+
+
+}
+
+void probabilidadIndividual(std::vector<carta> &baraja, std::vector<carta> &manoJugador, const std::vector<carta> &barajaOriginal){
+    int casosFavorables = 0;
+    std::string paloBuscado;
+    std::string cartaBuscada;
+    long double denominador = 0.0;
+    long double probabilidad = 0.0;
+    long double totalCartas = 52;
+    long double totalCartasJugador = manoJugador.size();
+
+    std::cout << " QUE CARTA DESEA BUSCAR? " << std::endl << std::endl;
+    std::cin >> cartaBuscada;
+    std::cout << " QUE PALO DESEA BUSCAR? " << std::endl << std::endl;
+    std::cin >> paloBuscado;
+
+    bool manoObtenida = false;
     for(int i = 0; i < manoJugador.size(); i++){
         if((manoJugador[i].carta == cartaBuscada) && (manoJugador[i].palo == paloBuscado)){
             manoObtenida = true;
@@ -173,216 +190,125 @@ void mostrarProbabilidadIndividual(std::vector<carta>& vect, std::vector<carta>&
     }
 
     if(manoObtenida){
-        std::cout << "La carta " << cartaBuscada << " de " <<  paloBuscado << " ya se encuentra en tu mano." << std::endl;
+        std::cout << " LA CARTA " << cartaBuscada << " de " << paloBuscado << " YA ESTA EN TU MANO" << std::endl << std::endl << std::endl;
         return;
     }
 
-    for(int i = 0; i < vect.size(); i++){
-        if((vect[i].palo == paloBuscado) && (vect[i].carta == cartaBuscada)){
-            casosFavorables++;
+    for(int i = 0; i < barajaOriginal.size(); i++){
+        if((barajaOriginal[i].carta == cartaBuscada) && (barajaOriginal[i].palo == paloBuscado)){
+            
+            bool cartaEnMano = false;
+
+            for(int i = 0; i < manoJugador.size(); i++){
+                if((manoJugador[i].carta == cartaBuscada) && (manoJugador[i].palo == paloBuscado)){
+                    cartaEnMano = true;
+                    break;
+                }
+            }
+
+            if(!cartaEnMano){
+                casosFavorables++;
+            }
         }
     }
 
-    denominador = (totalCartas - totalCartasManoJugador);
+    denominador = (totalCartas - totalCartasJugador);
 
-    if (denominador == 0) {
-        std::cout << "No es posible calcular la probabilidad, no hay más cartas disponibles en la baraja." << std::endl;
+    if(denominador <= 0){
+        std::cout << " NO ES POSIBLE CALCULAR LA PORBABILIDAD: " << std::endl << std::endl;
         return;
+
     }
 
-    probabilidadIndividual = (casosFavorables / denominador) * 100;
+    probabilidad = static_cast<long double>(casosFavorables) / denominador;
 
-    std::cout << " La probabilidad de que la carta " << cartaBuscada << " del palo " <<  paloBuscado << " salga de la baraja es: " << probabilidadIndividual << " % " << std::endl << std::endl;
+    std::cout << " LA PROBABILIDAD DE SACAR LA CARTA " <<  cartaBuscada << " DE " << paloBuscado << " ES: " << probabilidad << std::endl << std::endl;
 
 }
 
-void escaleraReal(){
-    std::vector<carta> escaleraReal;
-    std::string cartas[] = {"10", "J", "Q", "K", "A"}; // declarar as 13 opciones de cartas; 
-    std::string tipos[] = {"corazones", "diamantes", "treboles", "espadas"}; //declarar los 4 tipos de cartas;
-
-    for(int i = 0; i < 4; i++){ // esto es pa recorrer ambos arreglos;
-        for(int j = 0; j < 13; j++){
-            escaleraReal.push_back({cartas[j], tipos[i]}); //esto se usa pa que se agrege cada elemento;
-            
-        }
-    }
-}
-
-void escaleraColor(){
-    std::vector<carta> escaleraColor;
-    std::string cartas[] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
-    std::string tipos[] = {"corazones", "diamantes", "treboles", "espadas"};
-
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 13; j++){
-            escaleraColor.push_back({cartas[j], tipos[i]}); 
-            
-        }
-    }
-
-}
-
-void poker(){
-    std::vector<carta> poker;
-    std::string cartas[] = {"K"};
-    std::string tipos[] = {"corazones", "diamantes", "treboles", "espadas"};
-
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 13; j++){
-            poker.push_back({cartas[j], tipos[i]}); 
-            
-        }
-    }
-
-}
-
-void mostrarProbabilidadMazo(std::vector<carta>& vect, std::vector<carta> manoJugador, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker){
-    long double totalCartas = vect.size();
-    long double casosFavorables = 0.0;
-    std::string mazo;
+void probabilidadmazo(std::vector<carta> &manoJugador, std::vector<carta> &escaleraReal){
     int mazoBuscado;
-    long double denominador = 0.0;
-    long double totalCartasManoJugador = manoJugador.size();
-    long double ProbabilidadMazo = 0.0;
-    long double totalCartasManoJugadors = manoJugador.size();
+    int casosFavorables;  //=0
+    long double totalCartas = 52;
+    long double denominadors = 0.0;
+    long double  probabilidadMazo = 0.0;
+    long double totalCartaJugador = manoJugador.size();
 
-
-
-    std::cout << " los  mazos que puede buscar son: " << std::endl << std::endl;
-    std::cout << " 1 - escalera real: " << std::endl << std::endl;
-    std::cout << " 2 - escalera de color: " << std::endl <<std::endl;
-    std::cout << " 3 - poker: " << std::endl << std::endl;
+    std::cout << " QUE MAZO QUIERE BUSCAR: " << std::endl << std::endl;
+    std::cout << " 1 -> ESCALERA REAL: " << std::endl << std::endl;
+    std::cout << " 2 -> ESCALERA DE COLORES: " << std::endl << std::endl;
+    std::cout << " 3 -> POKER: " << std::endl << std::endl;
 
     std::cin >> mazoBuscado;
 
     switch(mazoBuscado){
-        case 1:
-        for(int i = 0; i < escaleraReal.size(); i++){
-            bool manoObtenida = false;
-            for(int i = 0; i < manoJugador.size(); i++){
-                if((escaleraReal[i].carta == manoJugador[i].carta) && (escaleraReal[i].palo == manoJugador[i].palo)){
-                    manoObtenida = true;
-                    break;
+        case 1:       
+            for(int i = 0; i < escaleraReal.size(); i++){
+                bool cartaObtenida = false;
+                for(int j = 0; j < manoJugador.size(); j++){
+                    if((escaleraReal[i].carta == manoJugador[j].carta) && (escaleraReal[i].palo == manoJugador[j].palo)){
+                        cartaObtenida = true;
+                        break;
+                    }
+                    if(!cartaObtenida){
+                        casosFavorables++;
+                    }
                 }
             }
-            if(!manoObtenida){
-                casosFavorables++;
-            }
-        }
             break;
         case 2:
-        for(int i = 0; i < escaleraColor.size(); i++){
-            bool manoObtenida = false;
-            for(int i = 0; i < manoJugador.size(); i++){
-                if((escaleraColor[i].carta == manoJugador[i].carta) && (escaleraColor[i].palo == manoJugador[i].palo)){
-                    manoObtenida = true;
-                    break;
-                }
-            }
-            if(!manoObtenida){
-                casosFavorables++;
-            }
-        }
+
             break;
-        case 3: 
-        for(int i = 0; i < poker.size(); i++){
-            bool manoObtenida = false;
-            for(int i = 0; i < manoJugador.size(); i++){
-                if((poker[i].carta == manoJugador[i].carta) && (poker[i].palo == manoJugador[i].palo)){
-                    manoObtenida = true;
-                    break;
-                }
-            }
-            if(!manoObtenida){
-                casosFavorables++;
-            }
-        }
-            break;
-        default:
+        case 3:
+            
             break;
     }
 
-    denominador = (totalCartas - totalCartasManoJugadors);
+    denominadors = (totalCartas - totalCartaJugador);
 
-    if (denominador > 0) {
-        ProbabilidadMazo = (casosFavorables / denominador) * 100;
-        std::cout << "La probabilidad de que armes el mazo seleccionado es: " << ProbabilidadMazo << "%" << std::endl;
-    } else {
-        std::cout << "No hay suficientes cartas en la baraja para calcular la probabilidad." << std::endl;
+    if(denominadors <= 0){
+        std::cout << " NO SE PUEDE CALCULAR LA PROBABILIDAD: " << std::endl << std::endl;
+        return;
+
     }
+
+    probabilidadMazo = static_cast<long double>(casosFavorables) / denominadors;
+
+    std::cout << " LA PROBABILIDAD DE OBTENER EL MAZO " << mazoBuscado << " EN LOS TURNOS RESTANTE ES " << probabilidadMazo << std::endl << std::endl; 
 
 }
 
+void JugarSolo(std::vector<carta> &baraja, std::vector<carta> &barajaOriginal, std::vector<carta> &escaleraReal){
+    barajearCartas(baraja);
 
-
-void unSoloJugador(std::vector<carta>& vect, std::vector<carta> escaleraReal, std::vector<carta> escaleraColor, std::vector<carta> poker){
-    barajearCartas(vect);
-    int opcion_unJugador;
+    int opcionJugador;
     std::string nombreJugador;
-    int opcionTurno = 1;
-
-    std::cout << " ingrese el nombre del jugador: " << std::endl << std::endl;
-    std::cin >> nombreJugador;
+    int opcionTurno;
 
     std::vector<carta> manoJugador;
     for(int i = 0; i < 1; i++){
-        manoJugador.push_back(vect[i]);// esto mete los numero del vector original que fueron generados aleatoriamente dentro del nuevo vector;
+        manoJugador.push_back(baraja[i]);
     }
+    baraja.erase(baraja.begin());
+
+    std::vector<carta> manoCarta;
+    for(int i = 0; i < 5; i++){
+        manoCarta.push_back(baraja[i]);
+    }
+    baraja.erase(baraja.begin(), baraja.begin() + 5);
+
+    std::cout << " INGRESE EL NOMBRE DEL JUGADOR: " << std::endl << std::endl;
+    std::cin >> nombreJugador;
     
-    vect.erase(vect.begin(), vect.begin() + 1); //esto se usa pa que los numeros que se generan aleatoriamente se guanden en el vector manoJugador y se borren del vetor llamado vec o vector original;
-
-    std::vector<carta> manoMaquina;
     for(int i = 0; i < 5; i++){
-        manoMaquina.push_back(vect[i]);
-    }
+        std::cout << " ES TU TURNO: " << std::endl << std::endl;
+        std::cout << " 1 -> MENU DE OPCIONES DE ELECCIONES: " << std::endl << std::endl;
+        std::cout << " 2 -> PASAR TURNO: " << std::endl << std::endl;
 
-    vect.erase(vect.begin(), vect.begin() + 5);
+        std::cin >> opcionJugador;
 
-    //quitar los comentarios para mostrar que las cartas siempre son diferentes;
-
-    //std::cout <<  " LA MANO DE " << nombreJugador << " ES " << std::endl << std::endl;
-    //for(int i = 0; i < manoJugador.size(); i++){
-         //if(manoJugador[i].palo == "corazones"){
-            //std::cout << rojo << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoJugador[i].palo == "diamantes"){
-            //std::cout << azul << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoJugador[i].palo == "treboles"){
-            //std::cout << verde << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoJugador[i].palo == "espadas"){
-            //std::cout << cyan << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-        //}
-    //}
-
-    // despues quitar esto, solo es para probar que no repita;
-    //std::cout <<  " LA MANO DE LA MAQUINA ES: " << std::endl << std::endl;
-    //for(int i = 0; i < manoMaquina.size(); i++){
-         //if(manoMaquina[i].palo == "corazones"){
-            //std::cout << rojo << manoMaquina[i].carta << " de " << manoMaquina[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoMaquina[i].palo == "diamantes"){
-            //std::cout << azul << manoMaquina[i].carta << " de " << manoMaquina[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoMaquina[i].palo == "treboles"){
-            //std::cout << verde << manoMaquina[i].carta << " de " << manoMaquina[i].palo << reset << std::endl << std::endl;
-        //}
-        //else if(manoMaquina[i].palo == "espadas"){
-            //std::cout << cyan << manoMaquina[i].carta << " de " << manoMaquina[i].palo << reset << std::endl << std::endl;
-        //}
-    //}
-
-    for(int i = 0; i < 5; i++){
-        std::cout << " ES TURNO DE " <<  nombreJugador << std::endl << std::endl;
-        std::cout << " 1 - MENU DE ELECCION: " << std::endl << std::endl;
-        std::cout << " 2 - PASAR TURNO: " << std::endl << std::endl;
-
-        std::cin >> opcionTurno;
-
-        switch(opcionTurno){
-            case 1:  //menu de eleccion
+        switch(opcionJugador){
+            case 1:
                 do{
                     std::cout << " MENU DE JUEGO: " << std::endl << std::endl;
                     std::cout << " 1 - ver tu mazo: " << std::endl << std::endl;
@@ -392,43 +318,11 @@ void unSoloJugador(std::vector<carta>& vect, std::vector<carta> escaleraReal, st
                     std::cout << " 5 - pedir una carta mas: " << std::endl << std::endl;
                     std::cout << " 6 - terminar turno: " << std::endl << std::endl;
 
-                    std::cin >> opcion_unJugador;
+                    std::cin >> opcionTurno;
 
-                    switch (opcion_unJugador){
-                    case 1: 
-                        std::cout <<  " LA MANO DE " << nombreJugador << " ES " << std::endl << std::endl;
-                        for(int i = 0; i < manoJugador.size(); i++){
-                            if(manoJugador[i].palo == "corazones"){
-                                std::cout << rojo << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-                            }
-                            else if(manoJugador[i].palo == "diamantes"){
-                                std::cout << azul << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-                            }
-                            else if(manoJugador[i].palo == "treboles"){
-                                std::cout << verde << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-                            }
-                            else if(manoJugador[i].palo == "espadas"){
-                                std::cout << cyan << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
-                            }
-                        }
-                        break;
-                    case 2:
-                        mostrarProbabilidadIndividual(vect, manoJugador, manoMaquina);
-                        break;
-                    case 3:
-                        mostrarProbabilidadMazo(vect, manoJugador, escaleraReal, escaleraColor, poker);
-                        break;
-                    case 4:
-
-                        break;
-                    case 5:
-                        if(manoJugador.size() < 5){
-                            for(int i = 0; i < 1; i++){
-                                manoJugador.push_back(vect[i]);
-                            }
-                            vect.erase(vect.begin(), vect.begin() + 1);
-
-                            std::cout <<  " TU MANO AHORA ES: " << std::endl << std::endl;
+                    switch(opcionTurno){
+                        case 1:
+                            std::cout <<  " LA MANO DE " << nombreJugador << " ES " << std::endl << std::endl;
                             for(int i = 0; i < manoJugador.size(); i++){
                                 if(manoJugador[i].palo == "corazones"){
                                     std::cout << rojo << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
@@ -443,39 +337,55 @@ void unSoloJugador(std::vector<carta>& vect, std::vector<carta> escaleraReal, st
                                     std::cout << cyan << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
                                 }
                             }
-
-                        }
-                        else{
-                            std::cout << amarillo << " NO PUEDES PEDIR MAS DE UNA CARTA POR TURNO: " << std::endl << std::endl;
-
-                        }
                         break;
-                    case 6:
-                        std::cout << azul << " TERMINANDO TURNO....... " << std::endl << std::endl;
+                            break;
+                        case 2:
+                            probabilidadIndividual(baraja, manoJugador, barajaOriginal);
+                            break;
+                        case 3:
+                            probabilidadmazo(manoJugador, escaleraReal);
+                            break;
+                        case 4:
 
-                        break;
-                    default:
-                        std::cout << rojo << " OPCION NO VALIDA, POR FAVOR INTRODUCIR " << std::endl << std::endl;
-                        break;
+                            break;
+                        case 5:
+                            if(manoJugador.size() < 5){
+                                for(int i = 0; i < 1; i++){
+                                    manoJugador.push_back(baraja[i]);
+                                }
+                                baraja.erase(baraja.begin(), baraja.begin() + 1);
+
+                                std::cout <<  " TU MANO AHORA ES: " << std::endl << std::endl;
+                                for(int i = 0; i < manoJugador.size(); i++){
+                                    if(manoJugador[i].palo == "corazones"){
+                                        std::cout << rojo << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
+                                    }
+                                    else if(manoJugador[i].palo == "diamantes"){
+                                        std::cout << azul << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
+                                    }
+                                    else if(manoJugador[i].palo == "treboles"){
+                                        std::cout << verde << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
+                                    }
+                                    else if(manoJugador[i].palo == "espadas"){
+                                        std::cout << cyan << manoJugador[i].carta << " de " << manoJugador[i].palo << reset << std::endl << std::endl;
+                                    }
+                                }
+                            }
+                            else{
+                                std::cout << amarillo << " NO PUEDES PEDIR MAS DE UNA CARTA POR TURNO: " << reset << std::endl << std::endl;
+
+                            }
+                            break;
                     }
 
-                }while(opcion_unJugador != 6);
+                }while(opcionTurno != 6);
 
                 break;
             case 2:
-                std::cout << verde << " ACABO tU TURNO: " << std::endl << std::endl;
+                break;
 
-                break;
-            default:
-                std::cout << rojo << " OPCION NO VALIDA, POR FAVOR INTRODUCIR " << std::endl << std::endl;
-                break;
         }
-
-        std::cout << rojo << " LA MAQUINA YA HIZO SU ELECCION: " << std::endl << std::endl;
-        std::cout << rojo << " LA MAQUINA TERMINO SU TURNO: " << std::endl << std::endl;
-
     }
-
 }
 
 
@@ -487,7 +397,6 @@ void dosJugadores(std::vector<carta>& vect) {
     std::cin >> nombreJugador2;
 
     barajearCartas(vect); 
-
  
  /*
    // para verificar las primeras 5 cartas 
@@ -573,7 +482,7 @@ void dosJugadores(std::vector<carta>& vect) {
             }
         }
 
-        // Verificar si ambos jugadores tienen 5 cartas y determinar el ganador
+        // determinar el ganador
         if (manoJugador1.size() == 5 && manoJugador2.size() == 5) {
             int puntajeJugador1 = evaluarMano(manoJugador1);
             int puntajeJugador2 = evaluarMano(manoJugador2);
@@ -587,7 +496,7 @@ void dosJugadores(std::vector<carta>& vect) {
                 std::cout << "¡Es un empate!\n";
             }
 
-            return; // Finaliza la función para detener el juego
+            return; 
         }
     }
 }
@@ -609,73 +518,137 @@ void mostrarMano(const std::vector<carta>& mano, const std::string& jugador) {
 }
 
 
-
-int evaluarMano(const std::vector<carta>& mano) {
-    // Este mapa es para contar la frecuencia de cada valor de carta en la mano
+int evaluarManos(const std::vector<carta>& mano) {
     std::map<std::string, int> conteoValores;
     std::map<std::string, int> conteoPalos;
+
+    // Convertir las cartas a num
+    std::vector<int> valoresNumericos;
 
     for (const auto& c : mano) {
         conteoValores[c.carta]++;
         conteoPalos[c.palo]++;
+
+        // Convertir cartas especiales a num
+        int valorNumerico;
+        if (c.carta == "A") valorNumerico = 14;
+        else if (c.carta == "K") valorNumerico = 13;
+        else if (c.carta == "Q") valorNumerico = 12;
+        else if (c.carta == "J") valorNumerico = 11;
+        else valorNumerico = std::stoi(c.carta);
+
+        valoresNumericos.push_back(valorNumerico);
     }
 
-    bool tienePar = false;
-    bool tieneTrio = false;
-    bool tieneColor = false;
+    // Ordenar num
+    std::sort(valoresNumericos.begin(), valoresNumericos.end());
+
+ 
     bool tieneEscalera = false;
-
-    // Para verificar pares trios y color
-    for (const auto& par : conteoValores) {
-        if (par.second == 2) {
-            tienePar = true;
-        }
-        if (par.second == 3) {
-            tieneTrio = true;
+    if (valoresNumericos.size() >= 5) {
+        for (size_t i = 0; i <= valoresNumericos.size() - 5; ++i) {
+            bool escalera = true;
+            for (size_t j = 1; j < 5; ++j) {
+                if (valoresNumericos[i + j] != valoresNumericos[i] + j) {
+                    escalera = false;
+                    break;
+                }
+            }
+            if (escalera) {
+                tieneEscalera = true;
+                break;
+            }
         }
     }
 
-    for (const auto& palo : conteoPalos) {
-        if (palo.second >= 5) {
+  
+    bool tieneColor = false;
+    for (const auto& p : conteoPalos) {
+        if (p.second >= 5) {
             tieneColor = true;
-        }
-    }
-
-    // Verificar escalera 
-    std::vector<int> valores;
-    for (const auto& par : conteoValores) {
-        if (par.first == "A") valores.push_back(1);
-        else if (par.first == "J") valores.push_back(11);
-        else if (par.first == "Q") valores.push_back(12);
-        else if (par.first == "K") valores.push_back(13);
-        else valores.push_back(std::stoi(par.first));
-    }
-    std::sort(valores.begin(), valores.end());
-    for (int i = 0; i <= valores.size() - 5; i++) {
-        if (valores[i + 4] == valores[i] + 4) {
-            tieneEscalera = true;
             break;
         }
     }
 
-    // Determinar el puntaje de la mano
-    if (tieneEscalera && tieneColor) {
-        return 9; // Escalera de color
-    } else if (tieneColor) {
-        return 6; // Color
-    } else if (tieneEscalera) {
-        return 5; // Escalera
-    } else if (tieneTrio && tienePar) {
-        return 7; // Full House
-    } else if (tieneTrio) {
-        return 3; // Trío
-    } else if (tienePar) {
-        return 2; // Par
+
+    bool tieneEscaleraColor = false;
+    if (tieneColor) {
+
+
+
+        std::string paloColor;
+        for (const auto& p : conteoPalos) {
+            if (p.second >= 5) {
+                paloColor = p.first;
+                break;
+            }
+        }
+
+
+        // Obtener los valores num de las cartas del mismo palo
+        std::vector<int> valoresColor;
+        for (const auto& c : mano) {
+            if (c.palo == paloColor) {
+                int valorNumerico;
+                if (c.carta == "A") valorNumerico = 14;
+                else if (c.carta == "K") valorNumerico = 13;
+                else if (c.carta == "Q") valorNumerico = 12;
+                else if (c.carta == "J") valorNumerico = 11;
+                else valorNumerico = std::stoi(c.carta);
+
+                valoresColor.push_back(valorNumerico);
+            }
+        }
+        std::sort(valoresColor.begin(), valoresColor.end());
+
+
+        // Ver si hay una escalera en el mismo palo
+        if (valoresColor.size() >= 5) {
+            for (size_t i = 0; i <= valoresColor.size() - 5; ++i) {
+                bool escalera = true;
+                for (size_t j = 1; j < 5; ++j) {
+                    if (valoresColor[i + j] != valoresColor[i] + j) {
+                        escalera = false;
+                        break;
+                    }
+                }
+                if (escalera) {
+                    tieneEscaleraColor = true;
+                    break;
+                }
+            }
+        }
     }
 
-    return 1; // Carta alta
+    // Otras combinaciones
+    int maxRepeticiones = 0;
+    int pares = 0;
+    int trios = 0;
+    bool poker = false;
+    for (const auto& v : conteoValores) {
+        if (v.second > maxRepeticiones) {
+            maxRepeticiones = v.second;
+        }
+        if (v.second == 2) pares++;
+        if (v.second == 3) trios++;
+        if (v.second == 4) poker = true;
+    }
+
+
+    if (tieneEscaleraColor && valoresNumericos.back() == 14) return 10; // Escalera Real
+    else if (tieneEscaleraColor) return 9;         // Escalera de color
+    else if (poker) return 8;                      // Póker
+    else if (trios == 1 && pares >= 1) return 7;   // Full House
+    else if (tieneColor) return 6;                 // Color
+    else if (tieneEscalera) return 5;              // Escalera
+    else if (trios == 1) return 4;                 // Trío
+    else if (pares >= 2) return 3;                 // Doble par
+    else if (pares == 1) return 2;                 // Un par
+    else return 1;                                 // Carta alta
 }
 
+
+/* aun no me sale...
 void calcularProbabilidadFutura(const std::vector<carta>& mano, const std::vector<carta>& mazo) {
     std::map<std::string, int> conteoValores;
     for (const auto& c : mano) {
@@ -729,3 +702,5 @@ void calcularProbabilidadFutura(const std::vector<carta>& mano, const std::vecto
     std::cout << " - Trio: " << probabilidadTrio << "%\n";
     std::cout << " - Escalera: " << probabilidadEscalera << "%\n";
 }
+
+*/
