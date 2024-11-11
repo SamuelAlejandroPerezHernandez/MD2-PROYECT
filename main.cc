@@ -47,7 +47,7 @@ void apuestas();
 void escaleraReal();
 void escaleraColor();
 void poker();
-int evaluarMano(); //// ????
+int evaluarMano2(); //// ????
 void determinarGanador();
 
 
