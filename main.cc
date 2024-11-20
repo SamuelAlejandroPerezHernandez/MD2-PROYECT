@@ -437,21 +437,20 @@ void probabilidadMazo(std::vector<carta> &manoJugador, const std::vector<carta> 
             }
 
 
-            casosFavorables = poker.size();
-
-                
-            denominadores = (totalCartas - totalCartaJugador);
-
-            if(denominadores <= 0){
+            if(cartaDiferente <= 1){
+                casosFavorables = poker.size();   
+                denominadores = (totalCartas - totalCartaJugador);
+            
+                if(denominadores <= 0){
                 std::cout << rojo << " NO SE PUEDE CALCULAR LA PROBABILIDAD: " << reset << std::endl << std::endl;
                 return;
 
+                }
+
+                probabilidadMazo = static_cast<long double>(casosFavorables) / denominadores;
+
+                std::cout << verde << " LA PROBABILIDAD DE OBTENER EL MAZO " << mazoBuscado << " EN LOS TURNOS RESTANTE ES " << probabilidadMazo << reset << std::endl << std::endl; 
             }
-
-            probabilidadMazo = static_cast<long double>(casosFavorables) / denominadores;
-
-            std::cout << verde << " LA PROBABILIDAD DE OBTENER EL MAZO " << mazoBuscado << " EN LOS TURNOS RESTANTE ES " << probabilidadMazo << reset << std::endl << std::endl; 
-
         break;
         default:
 
